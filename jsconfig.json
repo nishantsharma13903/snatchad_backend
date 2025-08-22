@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src", // adjust this if your source folder has a different name
+    "paths": {
+      "@/*": ["*"]
+    }
+  },
+  "include": ["src"]
+}
