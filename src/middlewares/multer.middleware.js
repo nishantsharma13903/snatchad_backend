@@ -22,19 +22,31 @@ const path = require("path");
 const fs = require("fs");
 
 // Ensure upload folder exists
-const uploadPath = path.join(__dirname, "..", "uploads", "photos");
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
+// const uploadPath = path.join(__dirname, "..", "uploads", "photos");
+// if (!fs.existsSync(uploadPath)) {
+//   fs.mkdirSync(uploadPath, { recursive: true });
+// }
 
 // Storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // cb(null, "public");
+    let uploadPath = "public"; // default
+
+    if (file.fieldname === "icon") {
+      uploadPath = "public/icons";
+    } else if (file.fieldname === "photos") {
+      uploadPath = "public/photos";
+    }
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+    );
   },
 });
 
@@ -79,5 +91,4 @@ const validateThreeFiles = (req, res, next) => {
   next();
 };
 
-module.exports = {upload,validateSixFiles,validateThreeFiles};
-
+module.exports = { upload, validateSixFiles, validateThreeFiles };

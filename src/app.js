@@ -6,6 +6,7 @@ const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const path = require('path');
 const apiRouter = require('./api');
 
 const logger = require("./utils/logger/logger.utils");
@@ -37,6 +38,7 @@ app.use("/api", apiLimiter);
 // 3. Parsing Middleware
 app.use(cookieParser());
 app.use(express.json({ limit: "50kb" }));
+app.use("/public", express.static(path.join(__dirname, "../public")));
 
 app.use(sanitizeRequest); // This middleware recursively removes any keys containing '$' or '.' from req.body, req.query, and req.params to prevent NoSQL injection attacks.
 

@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
   }
 
   // fields that may come as arrays
-  const arrayFields = ["goals", "interests", "lookingFor", "hobbies", "photos"];
+  const arrayFields = ["goals", "interests", "hobbies", "photos"];
 
   // fields that may come as objects
   const objectFields = ["location"];

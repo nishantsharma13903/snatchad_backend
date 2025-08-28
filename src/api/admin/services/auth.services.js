@@ -1,7 +1,4 @@
 const {
-  createActivityLog,
-} = require("@/api/v1/activityLogs/repository/activityLog.repo");
-const {
   getAdminDetails,
   verifyAdmin,
 } = require("@/api/admin/repository/admin.repo");

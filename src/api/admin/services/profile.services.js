@@ -1,12 +1,10 @@
 const {
-  createActivityLog,
-} = require("@/api/v1/activityLogs/repository/activityLog.repo");
-const {
   getAdminDetails,
   updateAdminPassword,
   getAdminProfile,
 } = require("@/api/admin/repository/admin.repo");
 const { blacklistBothTokens } = require("@/helpers/token/jwt.helper");
+const logger = require("@/utils/logger/logger.utils");
 const ResponseHandler = require("@/utils/response/responseHandler.utils");
 const {
   hashPlainText,
@@ -59,15 +57,6 @@ exports.updateAdminPassword = async (
     }
 
     await blacklistBothTokens(adminId);
-
-    await createActivityLog({
-      userId: adminId,
-      action: "Login",
-      details: "Admin updated password.",
-      userAgent,
-      ipAddress,
-      role: "Admin",
-    });
 
     return ResponseHandler.result(
       200,
