@@ -38,7 +38,7 @@ const modeSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  relationShipGoal : {
+  relationshipGoal : {
     type : String,
     default : ""
   },
