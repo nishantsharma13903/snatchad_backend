@@ -38,6 +38,34 @@ const modeSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  relationShipGoal : {
+    type : String,
+    default : ""
+  },
+  kids : {
+    type : String,
+    default : ""
+  },
+  languages : {
+    type : String,
+    default : ""
+  },
+  smoking : {
+    type : String,
+    default : ""
+  },
+  thc : {
+    type : String,
+    default : ""
+  },
+  drinking : {
+    type : String,
+    default : ""
+  },
+  religion : {
+    type : String,
+    default : ""
+  },
   hobbies: [String],
   location: {
     type: { type: String, enum: ["Point"], default: "Point" },

@@ -11,6 +11,7 @@ const heightRoutes = require("./height/routes");
 const goalRoutes = require("./goal/routes");
 const hobbyRoutes = require("./hobby/routes");
 const relationshipRoutes = require("./relationship/routes");
+const quizRoutes = require("./quiz/routes");
 
 router.use("/user", userRoutes);
 router.use("/admin", adminRoutes);
@@ -21,5 +22,6 @@ router.use("/relationship", relationshipRoutes);
 router.use("/height", heightRoutes);
 router.use("/hobby", hobbyRoutes);
 router.use("/goal", goalRoutes);
+router.use("/quiz", quizRoutes);
 
 module.exports = router;

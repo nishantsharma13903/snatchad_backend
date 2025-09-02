@@ -52,7 +52,7 @@ exports.getAllInterest = async (
       query.name = { $regex: search, $options: "i" };
     }
 
-    const sexualities = await Interest.find(query)
+    const interests = await Interest.find(query)
       .sort({ name: 1 })
       .skip(skip)
       .limit(limit)
@@ -62,7 +62,7 @@ exports.getAllInterest = async (
     const totalRecords = await Interest.countDocuments(query);
 
     return {
-      data: sexualities,
+      data: interests,
       currentPage: page,
       totalPages: Math.ceil(totalRecords / limit),
       totalRecords,
