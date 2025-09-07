@@ -100,12 +100,19 @@ exports.updateProfile = async (userId, mode = "quiz", updateData) => {
     });
 
     // 🛑 Ensure no duplicates (case-insensitive) for goals & hobbies
-    if (
-      ["goals", "hobbies"].includes(field) &&
-      Array.isArray(updateData[field])
-    ) {
-      updateData[field] = removeCaseInsensitiveDuplicates(updateData[field]);
-    }
+    // if (
+    //   ["goals", "hobbies"].forEach(field) &&
+    //   Array.isArray(updateData[field])
+    // ) {
+    //   updateData[field] = removeCaseInsensitiveDuplicates(updateData[field]);
+    // }
+
+    // 🛑 Ensure no duplicates (case-insensitive) for goals & hobbies
+    ["goals", "hobbies"].forEach((field) => {
+      if (Array.isArray(updateData[field])) {
+        updateData[field] = removeCaseInsensitiveDuplicates(updateData[field]);
+      }
+    });
 
     objectFields.forEach((field) => {
       if (updateData[field] && typeof updateData[field] === "string") {
@@ -194,17 +201,13 @@ exports.updatePhotosAndQuiz = async (
   files,
   mainPhotoIndex,
   quizScore,
-  mode = "quiz",
+  mode = "quiz"
 ) => {
   try {
     if (!userId)
       return ResponseHandler.result(400, false, "User ID is required.", {});
 
-    console.log( userId,
-  mode = "quiz",
-  files,
-  mainPhotoIndex,
-  quizScore)
+    console.log(userId, (mode = "quiz"), files, mainPhotoIndex, quizScore);
 
     // if (!files || files.length !== 6)
     //   return ResponseHandler.result(

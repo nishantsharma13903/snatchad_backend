@@ -79,9 +79,7 @@ exports.getUserByPhone = async (phone, selectedFields) => {
   try {
     let result = {};
 
-    result = await User.findOne({ phone: phone })
-      .select(selectedFields)
-      .lean();
+    result = await User.findOne({ phone: phone }).select(selectedFields).lean();
 
     return result;
   } catch (error) {
@@ -112,6 +110,100 @@ exports.getUserById = async (userId, selectedFields) => {
 exports.getUserByReferralCode = async (referralCode, selectedFields) => {
   try {
     return await User.findOne({ referralCode }).select(selectedFields).lean();
+  } catch (error) {
+    logger.error("Error", error);
+    throw error;
+  }
+};
+
+exports.getUsersByMode = async (
+  mode,
+  selectedFields,
+  page = 1,
+  limit = 10,
+  search = ""
+) => {
+  try {
+    page = Number.parseInt(page);
+    limit = Number.parseInt(limit);
+    const skip = (page - 1) * limit;
+
+    const query = { status: "Active" };
+
+    if (mode === "quiz") {
+      selectedFields += " profiles.quiz";
+    } else if (mode === "snatched") {
+      selectedFields += " profiles.snatched";
+    } else if (mode === "versus") {
+      selectedFields += " profiles.versus";
+    }
+
+    if (search) {
+      query.$or = [
+        { phone: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .select(selectedFields)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    const totalRecords = await User.countDocuments(query);
+
+    return {
+      data: users,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+    };
+  } catch (error) {
+    logger.error("Error", error);
+    throw error;
+  }
+};
+
+exports.getUsersByStatus = async (
+  status,
+  selectedFields,
+  page = 1,
+  limit = 10,
+  search = ""
+) => {
+  try {
+    page = Number.parseInt(page);
+    limit = Number.parseInt(limit);
+    const skip = (page - 1) * limit;
+
+    const query = {};
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (search) {
+      query.$or = [
+        { phone: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .select(selectedFields)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    const totalRecords = await User.countDocuments(query);
+
+    return {
+      data: users,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+    };
   } catch (error) {
     logger.error("Error", error);
     throw error;
