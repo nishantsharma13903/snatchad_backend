@@ -66,6 +66,46 @@ const modeSchema = new mongoose.Schema({
     type : String,
     default : ""
   },
+  alcohol : {
+    type : String,
+    default : ""
+  },
+  dateIdea : {
+    type : String,
+    default : ""
+  },
+  drug : {
+    type : String,
+    default : ""
+  },
+  enneagram : {
+    type : String,
+    default : ""
+  },
+  myersBriggs : {
+    type : String,
+    default : ""
+  },
+  pet : {
+    type : String,
+    default : ""
+  },
+  politicalStance : {
+    type : String,
+    default : ""
+  },
+  pronoun : {
+    type : String,
+    default : ""
+  },
+  race : {
+    type : String,
+    default : ""
+  },
+  zodiacSign : {
+    type : String,
+    default : ""
+  },
   hobbies: [String],
   location: {
     type: { type: String, enum: ["Point"], default: "Point" },

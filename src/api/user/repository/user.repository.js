@@ -209,3 +209,43 @@ exports.getUsersByStatus = async (
     throw error;
   }
 };
+
+exports.getNearbyUsers = async (
+  userId,
+  userLocation,
+  swipedIds,
+  mode,
+  skip,
+  limit
+) => {
+  return User.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: userLocation.coordinates,
+        },
+        distanceField: "distance",
+        spherical: true,
+      },
+    },
+    {
+      $match: {
+        _id: { $ne: new mongoose.Types.ObjectId(userId) },
+        status: "Active",
+        [`profiles.${mode}.profileStep`]: "completed",
+        _id: { $nin: swipedIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        distance: 1,
+        phone: 1,
+        [`profiles.${mode}`]: 1,
+      },
+    },
+    { $skip: skip },
+    { $limit: Number(limit) },
+  ]);
+};

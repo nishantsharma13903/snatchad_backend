@@ -2,7 +2,7 @@
 
 class ResponseHandler {
   static success(res, message = "Success", statusCode = 200, result = {}) {
-    return res.json({
+    return res.statusCode(statusCode).json({
       statusCode,
       success: true,
       message,
@@ -16,7 +16,7 @@ class ResponseHandler {
     statusCode = 400,
     result = {}
   ) {
-    return res.json({
+    return res.statusCode(statusCode).json({
       statusCode,
       success: false,
       message,
@@ -30,7 +30,7 @@ class ResponseHandler {
     statusCode = 500,
     result = {}
   ) {
-    return res.json({
+    return res.statusCode(statusCode).json({
       statusCode,
       success: false,
       message,

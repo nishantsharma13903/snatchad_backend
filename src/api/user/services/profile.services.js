@@ -1,10 +1,11 @@
 const ResponseHandler = require("@utils/response/responseHandler.utils");
 const logger = require("@utils/logger/logger.utils");
-const { getUserById, updateUser } = require("../repository/user.repository");
+const { getUserById, updateUser, getNearbyUsers } = require("../repository/user.repository");
 const { validateImages } = require("@/helpers/images/images.helper");
 const {
   removeCaseInsensitiveDuplicates,
 } = require("@/helpers/other/removeDuplicates.helper");
+const { getSwipedTargetIds } = require("@/api/swipe/repository/swipe.repo");
 
 // Fetch user details for a specific mode
 exports.getUserDetail = async (userId, mode = "quiz") => {
@@ -198,9 +199,8 @@ exports.updateProfile = async (userId, mode = "quiz", updateData) => {
 // Update photos and quiz for a specific mode
 exports.updatePhotosAndQuiz = async (
   userId,
-  files,
+  file,
   mainPhotoIndex,
-  quizScore,
   mode = "quiz"
 ) => {
   try {
@@ -263,3 +263,106 @@ exports.updatePhotosAndQuiz = async (
     );
   }
 };
+
+exports.updatePhotoByIndex = async (
+  userId,
+  file, // single file
+  photoIndex,
+  mode = "quiz"
+) => {
+  try {
+    if (!userId) {
+      return ResponseHandler.result(400, false, "User ID is required.", {});
+    }
+
+    if (!file) {
+      return ResponseHandler.result(400, false, "Photo file is required.", {});
+    }
+
+    const validationResults = await validateImages([file.path]);
+    if (!validationResults.isValid) {
+      return ResponseHandler.result(
+        400,
+        false,
+        "Uploaded photo is invalid.",
+        { details: validationResults.errors }
+      );
+    }
+
+    // Fetch user
+    const user = await getUserById(userId);
+    if (!user) {
+      return ResponseHandler.result(404, false, "User not found.", {});
+    }
+
+    const profile = user.profiles?.[mode] || {};
+    let photos = profile.photos || [];
+
+    // Ensure the array has enough slots
+    if (photoIndex >= photos.length) {
+      photos = [
+        ...photos,
+        ...Array(photoIndex - photos.length + 1).fill(null),
+      ];
+    }
+
+    // Preserve old values (_id, isPrimary) if they exist
+    const existingPhoto = photos[photoIndex] || {};
+
+    photos[photoIndex] = {
+      ...existingPhoto, // keep old fields like _id
+      url: file.path,
+      isPrimary: existingPhoto.isPrimary ?? false, // default false if missing
+      order: photoIndex,
+    };
+
+    profile.photos = photos;
+    profile.profileStep = "completed";
+
+    user.profiles = { ...user.profiles, [mode]: profile };
+    await updateUser(userId, { profiles: user.profiles });
+
+    return ResponseHandler.result(
+      200,
+      true,
+      "Photo updated successfully.",
+      {
+        photos: profile.photos.map((p, i) => ({
+          url: p.url,
+          isPrimary: p.isPrimary ?? false,
+          order: i,
+          _id: p._id || undefined, // keep if exists
+        })),
+      }
+    );
+  } catch (error) {
+    logger.error("Photo service error:", error);
+    return ResponseHandler.result(
+      500,
+      false,
+      "Error while updating photo.",
+      {}
+    );
+  }
+};
+
+exports.fetchNearbyProfiles = async (userId, mode, page, limit) => {
+  const currentUser = await getUserById(userId,"");
+  if (!currentUser) throw new Error("User not found");
+
+  const userLocation = currentUser.profiles[mode].location;
+  const swipedIds = await getSwipedTargetIds(userId);
+
+  const skip = (page - 1) * limit;
+
+  const nearbyProfiles = await getNearbyUsers(
+    userId,
+    userLocation,
+    swipedIds,
+    mode,
+    skip,
+    limit
+  );
+
+  return { profiles: nearbyProfiles, page, limit };
+}

@@ -188,3 +188,81 @@ exports.updatePhotosAndQuiz = async (req, res) => {
     );
   }
 };
+
+exports.updatePhotosByIndex = async (req, res) => {
+  try {
+    const mode = req.query.mode || "quiz";
+    if (!["quiz", "snatched", "versus"].includes(mode)) {
+      return ResponseHandler.error(
+        res,
+        "Invalid Mode (Possible values are 'quiz','snatched', 'versus')",
+        400,
+        {}
+      );
+    }
+
+    // Validate request body based on mode
+    // const schema = getPhotoQuizSchemaByMode(mode);
+    // await schema.validateAsync(req.body);
+
+    const { photoIndex=0 } = req.body;
+    const userId = req.token._id;
+
+    const response = await userService.updatePhotoByIndex(
+      userId,
+      req.file,
+      photoIndex,
+      mode
+    );
+
+    if (response.success) {
+      return ResponseHandler.success(
+        res,
+        response.message,
+        response.statusCode,
+        response.result
+      );
+    }
+    return ResponseHandler.error(
+      res,
+      response.message,
+      response.statusCode,
+      response.result
+    );
+  } catch (err) {
+    return ResponseHandler.error(
+      res,
+      err.message || "Internal Server Error",
+      500,
+      {}
+    );
+  }
+};
+
+exports.getNearbyProfiles = async (req, res) => {
+  try {
+    const userId = req.token._id; // from auth middleware
+    const { mode = "quiz", page = 1, limit = 10 } = req.query;
+
+    if (!["quiz", "snatched", "versus"].includes(mode)) {
+      return ResponseHandler.error(res, "Invalid mode", 400, {});
+    }
+
+    const result = await userService.fetchNearbyProfiles(
+      userId,
+      mode,
+      Number(page),
+      Number(limit)
+    );
+
+    return ResponseHandler.success(res, "Nearby profiles fetched", 200, result);
+  } catch (error) {
+    console.error("Nearby Profiles API error:", error);
+    return ResponseHandler.error(
+      res,
+      error.message || "Internal server error",
+      500,
+      {}
+    );
+  }
+};

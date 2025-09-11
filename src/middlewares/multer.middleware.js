@@ -35,7 +35,7 @@ const storage = multer.diskStorage({
 
     if (file.fieldname === "icon") {
       uploadPath = "public/icons";
-    } else if (file.fieldname === "photos") {
+    } else if (file.fieldname === "photos" || file.fieldname === "photo") {
       uploadPath = "public/photos";
     }
 

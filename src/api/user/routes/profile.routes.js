@@ -53,5 +53,19 @@ router.post(
   profileController.updatePhotosAndQuiz
 );
 
+router.post(
+  "/update-photo-by-index",
+  verifyToken(jwtAudience.user),
+  upload.single("photo"), // accept exactly 6 files
+  profileController.updatePhotosByIndex
+);
+
+router.post(
+  "/nearby-users",
+  verifyToken(jwtAudience.user),
+  upload.none(),
+  profileController.getNearbyProfiles
+);
+
 
 module.exports = router;
