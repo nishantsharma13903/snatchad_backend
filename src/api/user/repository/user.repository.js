@@ -1,5 +1,6 @@
 const logger = require("@utils/logger/logger.utils");
 const User = require("../model/user.model");
+const mongoose = require("mongoose");
 
 exports.checkUserNameExist = async (userName) => {
   try {
@@ -227,13 +228,14 @@ exports.getNearbyUsers = async (
         },
         distanceField: "distance",
         spherical: true,
+        key: `profiles.${mode}.location`,
       },
     },
     {
       $match: {
         _id: { $ne: new mongoose.Types.ObjectId(userId) },
         status: "Active",
-        [`profiles.${mode}.profileStep`]: "completed",
+        // [`profiles.${mode}.profileStep`]: "completed",
         _id: { $nin: swipedIds.map((id) => new mongoose.Types.ObjectId(id)) },
       },
     },
@@ -242,7 +244,112 @@ exports.getNearbyUsers = async (
         _id: 1,
         distance: 1,
         phone: 1,
-        [`profiles.${mode}`]: 1,
+        // [`profiles.${mode}`]: 1,
+        profile: `$profiles.${mode}`,
+      },
+    },
+    {
+      $lookup: {
+        from: "quizzes", // collection name
+        let: { creatorId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$createdBy", "$$creatorId"] },
+              status: "Active", // only active quizzes
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              description: 1,
+              createdBy: 1,
+              status: 1,
+            },
+          },
+        ],
+        as: "quizzes",
+      },
+    },
+    {
+      $lookup: {
+        from: "swipes",
+        let: {
+          targetId: "$_id",
+          currentUserId: new mongoose.Types.ObjectId(userId),
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$userId", "$$currentUserId"] },
+                  { $eq: ["$targetId", "$$targetId"] },
+                  { $eq: ["$action", "like"] },
+                ],
+              },
+            },
+          },
+          { $limit: 1 }, // only need one match
+        ],
+        as: "mySwipe",
+      },
+    },
+    {
+      $addFields: {
+        alreadyLiked: { $gt: [{ $size: "$mySwipe" }, 0] },
+      },
+    },
+    { $project: { mySwipe: 0 } },
+    { $skip: skip },
+    { $limit: Number(limit) },
+  ]);
+};
+
+exports.getPassedQuizProfiles = async (userId, userLocation, mode, threshold, skip, limit) => {
+  return User.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: userLocation.coordinates,
+        },
+        distanceField: "distance",
+        spherical: true,
+        key: `profiles.${mode}.location`, // mode-based location (quiz/snatched/versus)
+      },
+    },
+    {
+      $match: {
+        _id: { $ne: new mongoose.Types.ObjectId(userId) }, // exclude self
+        status: "Active",
+        [`profiles.${mode}.quizScore`]: { $gte: threshold }, // ✅ only pass %
+        [`profiles.${mode}.profileStep`]: "completed", // only completed profiles
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        distance: 1,
+        phone: 1,
+        profile: `$profiles.${mode}`, // flatten profile
+      },
+    },
+    {
+      $lookup: {
+        from: "quizzes",
+        let: { creatorId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$createdBy", "$$creatorId"] },
+              status: "Active",
+            },
+          },
+          { $project: { _id: 1, title: 1, description: 1, status: 1 } },
+        ],
+        as: "quizzes",
       },
     },
     { $skip: skip },

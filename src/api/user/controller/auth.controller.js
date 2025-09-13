@@ -109,7 +109,7 @@ exports.verifyOTP = async (req, res) => {
 
 exports.logoutUser = async (req, res) => {
   try {
-    const userId = req.token.userId;
+    const userId = req.token._id;
 
     const incomingToken = req.headers["authorization"];
 

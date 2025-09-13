@@ -3,6 +3,7 @@ const userService = require("../services/profile.services");
 const {
   getPhotoQuizSchemaByMode,
 } = require("@/api/user/validator/profile.validator");
+const { getPassedQuizProfiles, getUserById } = require("@/api/user/repository/user.repository");
 
 // Get user profile (mode-specific)
 exports.getUserProfile = async (req, res) => {
@@ -148,7 +149,7 @@ exports.updatePhotosAndQuiz = async (req, res) => {
       );
     }
 
-    console.log("req.files",req.files,req.file)
+    console.log("req.files",req.files,req.files)
 
     // Validate request body based on mode
     const schema = getPhotoQuizSchemaByMode(mode);
@@ -258,6 +259,50 @@ exports.getNearbyProfiles = async (req, res) => {
     return ResponseHandler.success(res, "Nearby profiles fetched", 200, result);
   } catch (error) {
     console.error("Nearby Profiles API error:", error);
+    return ResponseHandler.error(
+      res,
+      error.message || "Internal server error",
+      500,
+      {}
+    );
+  }
+};
+
+exports.getProfilesPassedQuiz = async (req, res) => {
+  try {
+    const userId = req.token._id;
+    const { mode = "quiz", page = 1, limit = 10, threshold = 60 } = req.query;
+
+    // ✅ Fetch user only in controller
+    const currentUser = await getUserById(userId, "");
+    if (!currentUser) {
+      return ResponseHandler.error(res, "User not found", 404, {});
+    }
+
+    const userLocation = currentUser.profiles[mode]?.location;
+    if (!userLocation?.coordinates) {
+      return ResponseHandler.error(res, "User location not set", 400, {});
+    }
+
+    const skip = (page - 1) * limit;
+
+    // ✅ Call service
+    const profiles = await getPassedQuizProfiles(
+      userId,
+      userLocation,
+      mode,
+      Number(threshold),
+      skip,
+      Number(limit)
+    );
+
+    return ResponseHandler.success(res, "Profiles fetched", 200, {
+      profiles,
+      page: Number(page),
+      limit: Number(limit),
+    });
+  } catch (error) {
+    console.error("QuizPass API error:", error);
     return ResponseHandler.error(
       res,
       error.message || "Internal server error",

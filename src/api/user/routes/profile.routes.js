@@ -1,13 +1,13 @@
-const express = require('express');
-const {upload} = require('@/middlewares/multer.middleware')
-const {verifyToken} = require('@middlewares/jwt.middleware')
-const profileController = require('../controller/profile.controller')
+const express = require("express");
+const { upload } = require("@/middlewares/multer.middleware");
+const { verifyToken } = require("@middlewares/jwt.middleware");
+const profileController = require("../controller/profile.controller");
 const router = express.Router();
 
 // Validation Schemas
 const { validateBody } = require("@/middlewares/validate.middleware");
 const { profileValidationSchema } = require("../validator/profile.validator");
-const { jwtAudience } = require('@config/jwt/jwt.config');
+const { jwtAudience } = require("@config/jwt/jwt.config");
 
 // Routes
 // router.get('/get-profile',verifyToken(jwtAudience.user), upload.none(), profileController.getUserProfile);
@@ -67,5 +67,11 @@ router.post(
   profileController.getNearbyProfiles
 );
 
+router.get(
+  "/quiz-passed-profiles",
+  verifyToken(jwtAudience.user),
+  upload.none(),
+  profileController.getProfilesPassedQuiz
+);
 
 module.exports = router;
