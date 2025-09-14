@@ -29,6 +29,7 @@ const politicalStanceRoutes = require("./politicalStance/routes");
 const pronounRoutes = require("./pronoun/routes");
 const raceRoutes = require("./race/routes");
 const zodiacSignRoutes = require("./zodiacSign/routes");
+const subscriptionRoutes = require("./subscription/routes");
 
 router.use("/user", userRoutes);
 router.use("/admin", adminRoutes);
@@ -57,5 +58,6 @@ router.use("/pronoun", pronounRoutes);
 router.use("/race", raceRoutes);
 router.use("/zodiacSign", zodiacSignRoutes);
 router.use("/quiz", quizRoutes);
+router.use("/subscription", subscriptionRoutes);
 
 module.exports = router;
